@@ -20,44 +20,44 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -->
 <html>
-  <head>
-    <meta charset='utf-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no'>
-    <meta name='mobile-web-app-capable' content='yes'>
-    <meta name='apple-mobile-web-app-capable' content='yes'>
-    <link rel='icon' type='image/png' sizes='32x32' href='favicon-32x32.png'>
-    <link rel='icon' type='image/png' sizes='96x96' href='favicon-96x96.png'>
-    <link rel='stylesheet' href='css/common.css'>
 
-    <title>Multi layer Texture Array</title>
-  </head>
-  <body>
-    <header>
-      <details open>
-        <summary>Multi layer Texture Array</summary>
-        <p>
-          This sample uses one or more projection layers
-          or one or more cylinder layers
-          <a class="back" href="./">Back</a>
-        </p>
-        <button id="xr-button" disabled>XR not found</button>
-        <button id="xr-button2" disabled>XR not found</button>
-        <button id="xr-button3" disabled>XR not found</button>
-        <input type="checkbox" id="stereo_layer" value="Bike">stereo cylinder layer</input>
-        <input type="checkbox" id="texture_array" value="Bike">texture array</input>
-      </details>
-    </header>
-    <main style='text-align: center;'>
-      <p>Click 'Enter VR' to see content</p> 
-    </main>
-    <script>
-      (function () {
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no'>
+  <meta name='mobile-web-app-capable' content='yes'>
+  <meta name='apple-mobile-web-app-capable' content='yes'>
+  <link rel='icon' type='image/png' sizes='32x32' href='favicon-32x32.png'>
+  <link rel='icon' type='image/png' sizes='96x96' href='favicon-96x96.png'>
+  <link rel='stylesheet' href='css/common.css'>
+
+  <title>Multi layer Texture Array</title>
+</head>
+
+<body>
+  <header>
+    <details open>
+      <summary>Multi layer Texture Array</summary>
+      <p>
+        This sample uses one or more projection layers
+        or one or more cylinder layers
+        <a class="back" href="./">Back</a>
+      </p>
+      <button id="xr-button" disabled>XR not found</button>
+      <button id="xr-button2" disabled>XR not found</button>
+      <input type="checkbox" id="stereo_layer" value="Bike">stereo cylinder layer</input>
+      <input type="checkbox" id="texture_array" value="Bike">texture array</input>
+    </details>
+  </header>
+  <main style='text-align: center;'>
+    <p>Click 'Enter VR' to see content</p>
+  </main>
+  <script>
+    (function () {
       'use strict';
 
       // XR globals.
       let xrButton = document.getElementById('xr-button');
       let xrButton2 = document.getElementById('xr-button2');
-      let xrButton3 = document.getElementById('xr-button3');
       let xrSession = null;
       let xrRefSpace = null;
       let xrGLFactory = null;
@@ -89,9 +89,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               xrButton2.addEventListener('click', onButtonClicked2);
               xrButton2.textContent = 'Show 2 layers';
               xrButton2.disabled = false;
-              xrButton3.addEventListener('click', onButtonClicked3);
-              xrButton3.textContent = 'Show single cylinder layer';
-              xrButton3.disabled = false;
             }
           });
         }
@@ -108,7 +105,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           xrSession.end();
         }
       }
-        
+
       function onButtonClicked2() {
         if (!xrSession) {
           single_layer = false;
@@ -118,16 +115,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           xrSession.end();
         }
       }
-        
-      function onButtonClicked3() {
-        if (!xrSession) {
-          single_layer = true;
-          cylinder_layer = true;
-          navigator.xr.requestSession('immersive-vr').then(onSessionStarted);
-        } else {
-          xrSession.end();
-        }
-      }
+
       // Called when we've successfully acquired a XRSession. In response we
       // will set up the necessary session state and kick off the frame loop.
       function onSessionStarted(session) {
@@ -147,63 +135,38 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         ttt = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D_ARRAY, ttt);
         gl.texImage3D(gl.TEXTURE_2D_ARRAY,
-              0,                                          // level
-              gl.RGBA,                                    // internalFormat
-              100,                                          // width
-              100,                                          // height
-              2,                                          // depth
-              0,                                          // border
-              gl.RGBA,                                    // format
-              gl.UNSIGNED_BYTE,                           // type
-              null);  // data
+          0,                                          // level
+          gl.RGBA,                                    // internalFormat
+          100,                                          // width
+          100,                                          // height
+          2,                                          // depth
+          0,                                          // border
+          gl.RGBA,                                    // format
+          gl.UNSIGNED_BYTE,                           // type
+          null);  // data
         gl.bindTexture(gl.TEXTURE_2D_ARRAY, null);
 
         xrFramebuffer = gl.createFramebuffer();
         xrGLFactory = new XRWebGLBinding(session, gl);
-        if(!cylinder_layer) {
-          let layer = xrGLFactory.createProjectionLayer(texture_array.checked?"texture-array":"texture", {});
-          if (single_layer) {
-            session.updateRenderState({ layers: [ layer ] });
+        let layer = xrGLFactory.createProjectionLayer(texture_array.checked ? "texture-array" : "texture", {});
+        if (single_layer) {
+          session.updateRenderState({ layers: [layer] });
 
-            session.requestReferenceSpace('local').then((refSpace) => {
-              xrRefSpace = refSpace;
+          session.requestReferenceSpace('local').then((refSpace) => {
+            xrRefSpace = refSpace;
 
-              // Inform the session that we're ready to begin drawing.
-              session.requestAnimationFrame(onXRFrame);
-            });
-          } else {
-            let layer2 = xrGLFactory.createProjectionLayer(texture_array.checked?"texture-array":"texture", {});
-            session.updateRenderState({ layers: [ layer, layer2 ] });
-            session.requestReferenceSpace('local').then((refSpace) => {
-              xrRefSpace = refSpace;
-
-              // Inform the session that we're ready to begin drawing.
-              session.requestAnimationFrame(onXRFrame);
-            });
-          }
+            // Inform the session that we're ready to begin drawing.
+            session.requestAnimationFrame(onXRFrame);
+          });
         } else {
-          let layer = xrGLFactory.createCylinderLayer(texture_array.checked?"texture-array":"texture", {viewPixelWidth: 200, viewPixelHeight: 100, stereo: (stereo_layer.checked ? "default" : "mono")});
-          if (single_layer) { 
-            session.updateRenderState({ layers: [ layer ] });
+          let layer2 = xrGLFactory.createProjectionLayer(texture_array.checked ? "texture-array" : "texture", {});
+          session.updateRenderState({ layers: [layer, layer2] });
+          session.requestReferenceSpace('local').then((refSpace) => {
+            xrRefSpace = refSpace;
 
-            session.requestReferenceSpace('local').then((refSpace) => {
-              xrRefSpace = refSpace;
-
-              // Inform the session that we're ready to begin drawing.
-              session.requestAnimationFrame(onXRFrame);
-            });
-          } else {
-            let layer2 = xrGLFactory.createCylinderLayer(texture_array.checked?"texture-array":"texture", {viewPixelWidth: 200, viewPixelHeight: 100, stereo: (stereo_layer.checked ? "default" : "mono")});
-            layer2.radius = 2;
-            layer2.centralAngle = 180 * Math.PI / 180;
-            session.updateRenderState({ layers: [ layer, layer2 ] });
-            session.requestReferenceSpace('local').then((refSpace) => {
-              xrRefSpace = refSpace;
-
-              // Inform the session that we're ready to begin drawing.
-              session.requestAnimationFrame(onXRFrame);
-            });
-          }
+            // Inform the session that we're ready to begin drawing.
+            session.requestAnimationFrame(onXRFrame);
+          });
         }
       }
 
@@ -241,26 +204,21 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           let layeroffset = 0;
           let numlayers = session.renderState.layers.length;
           let arraylength = session.renderState.layers.length;
-          session.renderState.layers.forEach(function(glLayer) {   
+          session.renderState.layers.forEach(function (glLayer) {
             const width = glLayer.viewPixelWidth;
             const height = glLayer.viewPixelHeight;
             let offset = 0;
             pose.views.forEach(view => {
-              let subimage = null;
-              if (glLayer.layout !== "mono") {
-                subimage = xrGLFactory.getViewSubImage(glLayer, view);
-              } else {
-                subimage = xrGLFactory.getSubImage(glLayer, frame);
-              }
+              let subimage = xrGLFactory.getViewSubImage(glLayer, view);
               gl.bindFramebuffer(gl.FRAMEBUFFER, xrFramebuffer);
               gl.viewport(subimage.viewport.x,
-                          subimage.viewport.y + subimage.viewport.height/numlayers*layeroffset,
-                          subimage.viewport.width,
-                          subimage.viewport.height/numlayers);
+                subimage.viewport.y + subimage.viewport.height / numlayers * layeroffset,
+                subimage.viewport.width,
+                subimage.viewport.height / numlayers);
 
               if (texture_array.checked) {
                 gl.framebufferTextureLayer(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, subimage.colorTexture, 0, subimage.imageIndex);
-//                gl.framebufferTextureLayer(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, ttt, 0, subimage.imageIndex);
+                //                gl.framebufferTextureLayer(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, ttt, 0, subimage.imageIndex);
               } else {
                 gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, subimage.colorTexture, 0);
               }
@@ -271,13 +229,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               gl.enable(gl.SCISSOR_TEST);
 
               gl.scissor(subimage.viewport.x,
-                         subimage.viewport.y + subimage.viewport.height/numlayers*layeroffset,
-                         subimage.viewport.width,
-                         subimage.viewport.height/numlayers);
+                subimage.viewport.y + subimage.viewport.height / numlayers * layeroffset,
+                subimage.viewport.width,
+                subimage.viewport.height / numlayers);
               cnt++;
               gl.clearColor(Math.cos(cnt * time / 2000),
-                            Math.cos(cnt * time / 4000),
-                            Math.cos(cnt * time / 6000), 1.0);
+                Math.cos(cnt * time / 4000),
+                Math.cos(cnt * time / 6000), 1.0);
               gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
               offset++;
             });
@@ -290,6 +248,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       initXR();
 
     })();
-    </script>
-  </body>
+  </script>
+</body>
+
 </html>

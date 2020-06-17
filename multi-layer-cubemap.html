@@ -55,7 +55,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       import {InlineViewerHelper} from './js/util/inline-viewer-helper.js';
       import {QueryArgs} from './js/util/query-args.js';
       import {quat} from './js/render/math/gl-matrix.js';
-  
+
       // If requested, use the polyfill to provide support for mobile devices
       // and devices which only support WebVR.
       import WebXRPolyfill from './js/third-party/webxr-polyfill/build/webxr-polyfill.module.js';
@@ -97,7 +97,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       let img_tag;
       let img_tag_ready = false;
-      
+
       function initXR() {
         xrButton = new WebXRButton({
           onRequestSession: onRequestSession,
@@ -411,16 +411,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         session.requestReferenceSpace('local').then((refSpace) => {
           proj_layer = xrGLFactory.createProjectionLayer("texture", {space: refSpace, stencil: do_stencil_buffer.checked});
           cube_layer = xrGLFactory.createCubeLayer({
-            space: refSpace, 
-            viewPixelWidth: cube_face_size, 
+            space: refSpace,
+            viewPixelWidth: cube_face_size,
             viewPixelHeight: cube_face_size,
-            layout: ((stereo_layer.checked) ? "default" : "mono"),
+            layout: ((stereo_layer.checked) ? "stereo" : "mono"),
             isStatic: true
           });
           cyl_layer = xrGLFactory.createCylinderLayer("texture", {
-            space: refSpace, 
-            viewPixelWidth: cyl_texture_width, 
-            viewPixelHeight: cyl_texture_height / (stereo_layer.checked ? 2 : 1), 
+            space: refSpace,
+            viewPixelWidth: cyl_texture_width,
+            viewPixelHeight: cyl_texture_height / (stereo_layer.checked ? 2 : 1),
             layout: ((stereo_layer.checked) ? "stereo-top-bottom" : "mono"),
             isStatic: true
           });
@@ -448,7 +448,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onXRFrame(t, frame) {
-        ++frame_id; 
+        ++frame_id;
         let session = frame.session;
         let refSpace = session.isImmersive ?
                          xrImmersiveRefSpace :
@@ -462,17 +462,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         if (session.isImmersive) {
           let glayer;
 
-          if (cube_layer.needsRedraw) {                                             
+          if (cube_layer.needsRedraw) {
             if (cube_layer.layout == "mono") {
               glayer = xrGLFactory.getSubImage(cube_layer, frame);
               copyCubestripToGLBuffer(glayer.colorTexture, cube_map_image, 0);
-            } else if (cube_layer.layout == "default") {
+            } else if (cube_layer.layout == "stereo") {
               let offset = 0;
-              for (let view of pose.views) {
-                glayer = xrGLFactory.getViewSubImage(cube_layer, view);
+              eyes = ["left", "right"];
+              for (let eye of eyes) {
+                glayer = xrGLFactory.getSubImage(cube_layer, frame, eye);
                 copyCubestripToGLBuffer(glayer.colorTexture, cube_map_image, offset*6);
                 ++offset;
-              }     
+              }
               let orient = quat.create();
               quat.fromEuler(orient, 0, -60, 0);
               cube_layer.orientation = new DOMPointReadOnly(orient[0], orient[1], orient[2], orient[3]);
@@ -493,14 +494,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               gl.clearColor(0, 1, 0, 1);
               gl.clear(gl.COLOR_BUFFER_BIT);
               stereoUtil.blit(false, cyl_texture, 0, 0, 1, 1, cyl_texture_width, cyl_texture_height);
-              
+
               gl.bindFramebuffer(gl.FRAMEBUFFER, null);
               gl.deleteFramebuffer(fb);
             } else if (img_tag_ready) {
               glayer = xrGLFactory.getSubImage(cyl_layer, frame);
               gl.bindTexture(gl.TEXTURE_2D, glayer.colorTexture);
-              gl.texSubImage2D(gl.TEXTURE_2D, 0, 
-                               0, 0, 
+              gl.texSubImage2D(gl.TEXTURE_2D, 0,
+                               0, 0,
                                gl.RGBA, gl.UNSIGNED_BYTE, img_tag);
               gl.bindTexture(gl.TEXTURE_2D, null);
             }
@@ -553,7 +554,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
           // Draw(views):
           //   for each object in scene:
-          //     bindProgram();  
+          //     bindProgram();
           //     bindUniforms();
           //     bindBuffers();
           //     bindTextures();
@@ -582,7 +583,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             if (session.isImmersive) {
 
               glLayer = xrGLFactory.getViewSubImage(proj_layer, view);
-              
+
               glLayer.framebuffer = xrFramebuffer;
               viewport = glLayer.viewport;
               gl.bindFramebuffer(gl.FRAMEBUFFER, xrFramebuffer);
@@ -597,7 +598,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               viewport = glLayer.getViewport(view);
             }
             gl.enable(gl.SCISSOR_TEST);
-            gl.scissor(viewport.x, viewport.y, viewport.width, viewport.height); 
+            gl.scissor(viewport.x, viewport.y, viewport.width, viewport.height);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             gl.disable(gl.SCISSOR_TEST);
             // Gather all the values needed for one view and push it into the
@@ -612,7 +613,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
           scene.drawViewArray(views);
         }
-        
+
         scene.endFrame();
       }
 
