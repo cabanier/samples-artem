@@ -417,7 +417,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             layout: ((stereo_layer.checked) ? "stereo" : "mono"),
             isStatic: true
           });
-          cyl_layer = xrGLFactory.createCylinderLayer("texture", {
+          cyl_layer = xrGLFactory.createCylinderLayer({
             space: refSpace,
             viewPixelWidth: cyl_texture_width,
             viewPixelHeight: cyl_texture_height / (stereo_layer.checked ? 2 : 1),
